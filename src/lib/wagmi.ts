@@ -3,7 +3,7 @@ import { mainnet, sepolia } from 'wagmi/chains';
 import { defineChain } from 'viem';
 
 export const arcTestnet = defineChain({
-  id: 666, // Placeholder ID for Arc Testnet
+  id: 666, // Placeholder ID for Arc Testnet, replace with actual if known
   name: 'Arc Testnet',
   nativeCurrency: { name: 'Arc', symbol: 'ARC', decimals: 18 },
   rpcUrls: {

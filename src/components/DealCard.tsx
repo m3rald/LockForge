@@ -1,187 +1,205 @@
 import React, { useState } from 'react';
-import { formatEther } from 'viem';
-import { useEscrow } from '../hooks/useEscrow';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, CheckCircle2, AlertTriangle, ExternalLink, Loader2, FileText } from 'lucide-react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { formatEther, parseEther } from 'viem';
+import { useEscrow } from '../hooks/useEscrow';
+import { ExternalLink, Clock, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 
-interface DealCardProps {
-  deal: any;
-  role: 'buyer' | 'seller';
-  key?: any;
+export interface Deal {
+  id: bigint;
+  buyer: string;
+  seller: string;
+  amount: bigint;
+  description: string;
+  deliveryDays: bigint;
+  createdAt: bigint;
+  acceptedAt: bigint;
+  proofIpfs: string;
+  status: number;
 }
 
-export default function DealCard({ deal, role }: DealCardProps) {
-  const { acceptDeal, submitProof, approveRelease, dispute, refetchDeals } = useEscrow();
-  const [isActionLoading, setIsActionLoading] = useState(false);
+interface DealCardProps {
+  deal: Deal;
+  role: 'buyer' | 'seller';
+}
+
+const STATUS_MAP = ['Funded', 'In Progress', 'Reviewing', 'Completed', 'Disputed'];
+
+export const DealCard: React.FC<DealCardProps> = ({ deal, role }) => {
+  const { acceptDeal, submitProof, approveRelease, dispute } = useEscrow();
   const [proofUrl, setProofUrl] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const statusMap = [
-    { label: 'Funded', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-    { label: 'In Progress', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    { label: 'Reviewing', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-    { label: 'Completed', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-    { label: 'Disputed', color: 'bg-rose-100 text-rose-700 border-rose-200' },
-  ];
-
-  const currentStatus = statusMap[deal.status] || statusMap[0];
-
-  const handleAction = async (actionFn: () => Promise<any>, successMsg: string) => {
+  const handleAccept = async () => {
+    setIsSubmitting(true);
     try {
-      setIsActionLoading(true);
-      await actionFn();
-      toast.success(successMsg);
-      refetchDeals();
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || 'Action failed');
+      await acceptDeal(Number(deal.id));
     } finally {
-      setIsActionLoading(false);
+      setIsSubmitting(false);
     }
   };
 
+  const handleSubmitProof = async () => {
+    if (!proofUrl) return;
+    setIsSubmitting(true);
+    try {
+      await submitProof(Number(deal.id), proofUrl);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    setIsSubmitting(true);
+    try {
+      await approveRelease(Number(deal.id));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDispute = async () => {
+    setIsSubmitting(true);
+    try {
+      // 15% bond as per requirements
+      const bond = (deal.amount * 15n) / 100n;
+      await dispute(Number(deal.id), bond);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isBuyer = role === 'buyer';
+  const isSeller = role === 'seller';
+
   return (
-    <Card className="overflow-hidden border-neutral-200 hover:shadow-md transition-shadow">
+    <Card className="w-full overflow-hidden border-slate-200 transition-all hover:shadow-md">
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <Badge variant="outline" className={`${currentStatus.color} font-semibold px-3 py-1`}>
-            {currentStatus.label}
-          </Badge>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-bold text-slate-900">{deal.description}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <Badge variant="outline" className="font-mono text-[10px]">
+                ID: {deal.id.toString()}
+              </Badge>
+              <Badge 
+                variant={deal.status === 3 ? "default" : deal.status === 4 ? "destructive" : "secondary"}
+                className="capitalize"
+              >
+                {STATUS_MAP[deal.status]}
+              </Badge>
+            </CardDescription>
+          </div>
           <div className="text-right">
-            <p className="text-xs text-neutral-400 uppercase font-bold tracking-wider">Amount</p>
-            <p className="text-xl font-bold text-neutral-900">{formatEther(deal.amount)} ARC</p>
+            <div className="text-xl font-bold text-indigo-600">{formatEther(deal.amount)} ARC</div>
+            <div className="text-xs text-slate-500">Escrowed Amount</div>
           </div>
         </div>
-        <CardTitle className="text-lg font-bold mt-2 line-clamp-2">{deal.description}</CardTitle>
       </CardHeader>
-      
       <CardContent className="space-y-4 pb-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="space-y-1">
-            <p className="text-neutral-400 flex items-center">
-              <Clock className="w-3 h-3 mr-1" /> Created
-            </p>
-            <p className="font-medium">{format(new Date(Number(deal.createdAt) * 1000), 'MMM dd, yyyy')}</p>
+            <div className="text-slate-500">Buyer</div>
+            <div className="font-mono text-xs truncate" title={deal.buyer}>{deal.buyer}</div>
           </div>
           <div className="space-y-1">
-            <p className="text-neutral-400 flex items-center">
-              <Clock className="w-3 h-3 mr-1" /> Deadline
-            </p>
-            <p className="font-medium">{deal.deliveryDays.toString()} Days</p>
+            <div className="text-slate-500">Seller</div>
+            <div className="font-mono text-xs truncate" title={deal.seller}>
+              {deal.seller === '0x0000000000000000000000000000000000000000' ? 'Unassigned' : deal.seller}
+            </div>
           </div>
         </div>
 
-        {deal.status > 0 && (
-          <div className="pt-2 border-t border-neutral-100">
-            <p className="text-xs text-neutral-400 uppercase font-bold tracking-wider mb-1">
-              {role === 'buyer' ? 'Seller' : 'Buyer'} Address
-            </p>
-            <p className="text-xs font-mono text-neutral-600 truncate">
-              {role === 'buyer' ? deal.seller : deal.buyer}
-            </p>
+        <div className="flex items-center gap-4 text-xs text-slate-600">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{deal.deliveryDays.toString()} Days Delivery</span>
           </div>
-        )}
+          <div className="flex items-center gap-1">
+            <Shield className="h-3 w-3" />
+            <span>Created {format(new Date(Number(deal.createdAt) * 1000), 'MMM d, yyyy')}</span>
+          </div>
+        </div>
 
-        {deal.status === 2 && deal.proofIpfs && (
-          <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
-            <p className="text-xs font-bold text-neutral-500 uppercase flex items-center mb-1">
-              <FileText className="w-3 h-3 mr-1" /> Delivery Proof
-            </p>
+        {deal.proofIpfs && (
+          <div className="rounded-lg bg-indigo-50 p-3 text-xs">
+            <div className="mb-1 font-semibold text-indigo-900">Delivery Proof:</div>
             <a 
               href={deal.proofIpfs} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline flex items-center truncate"
+              className="flex items-center gap-1 text-indigo-600 hover:underline"
             >
-              {deal.proofIpfs} <ExternalLink className="w-3 h-3 ml-1" />
+              {deal.proofIpfs} <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         )}
       </CardContent>
-
-      <CardFooter className="bg-neutral-50/50 border-t border-neutral-100 pt-4">
-        {role === 'seller' && deal.status === 0 && (
-          <Button 
-            className="w-full bg-neutral-900" 
-            onClick={() => handleAction(() => acceptDeal(deal.id), 'Deal accepted!')}
-            disabled={isActionLoading}
-          >
-            {isActionLoading ? <Loader2 className="animate-spin h-4 w-4" /> : 'Accept Deal'}
-          </Button>
-        )}
-
-        {role === 'seller' && deal.status === 1 && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full bg-neutral-900">Submit Proof</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Submit Proof of Delivery</DialogTitle>
-                <DialogDescription>
-                  Provide an IPFS link or URL to your work. The buyer will review this before releasing funds.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="proof">Proof URL / IPFS Hash</Label>
-                  <Input 
-                    id="proof" 
-                    placeholder="https://ipfs.io/ipfs/..." 
-                    value={proofUrl}
-                    onChange={(e) => setProofUrl(e.target.value)}
-                  />
+      <CardFooter className="border-t bg-slate-50/50 pt-4">
+        <div className="flex w-full gap-2">
+          {/* Seller Actions */}
+          {isSeller && deal.status === 0 && (
+            <Button className="w-full" onClick={handleAccept} disabled={isSubmitting}>
+              Accept Deal
+            </Button>
+          )}
+          
+          {isSeller && deal.status === 1 && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="w-full">Submit Proof</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Submit Delivery Proof</DialogTitle>
+                  <DialogDescription>
+                    Provide an IPFS link or URL to your work for the buyer to review.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="proof">Proof URL (IPFS)</Label>
+                    <Input 
+                      id="proof" 
+                      placeholder="https://ipfs.io/ipfs/..." 
+                      value={proofUrl}
+                      onChange={(e) => setProofUrl(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button 
-                  onClick={() => handleAction(() => submitProof(deal.id, proofUrl), 'Proof submitted!')}
-                  disabled={isActionLoading || !proofUrl}
-                >
-                  {isActionLoading ? <Loader2 className="animate-spin h-4 w-4" /> : 'Submit for Review'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+                <DialogFooter>
+                  <Button onClick={handleSubmitProof} disabled={isSubmitting || !proofUrl}>
+                    {isSubmitting ? 'Submitting...' : 'Confirm Submission'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
 
-        {role === 'buyer' && deal.status === 2 && (
-          <div className="grid grid-cols-2 gap-3 w-full">
-            <Button 
-              variant="outline" 
-              className="border-rose-200 text-rose-600 hover:bg-rose-50"
-              onClick={() => handleAction(() => dispute(deal.id, (Number(formatEther(deal.amount)) * 0.15).toString()), 'Dispute opened')}
-              disabled={isActionLoading}
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" /> Dispute
-            </Button>
-            <Button 
-              className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => handleAction(() => approveRelease(deal.id), 'Funds released!')}
-              disabled={isActionLoading}
-            >
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Approve
-            </Button>
-          </div>
-        )}
+          {/* Buyer Actions */}
+          {isBuyer && deal.status === 2 && (
+            <>
+              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleApprove} disabled={isSubmitting}>
+                <CheckCircle2 className="mr-2 h-4 w-4" /> Approve & Release
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={handleDispute} disabled={isSubmitting}>
+                <AlertCircle className="mr-2 h-4 w-4" /> Dispute
+              </Button>
+            </>
+          )}
 
-        {deal.status === 3 && (
-          <div className="w-full text-center py-2 text-emerald-600 font-medium text-sm flex items-center justify-center">
-            <CheckCircle2 className="w-4 h-4 mr-2" /> Transaction Completed
-          </div>
-        )}
-
-        {deal.status === 4 && (
-          <div className="w-full text-center py-2 text-rose-600 font-medium text-sm flex items-center justify-center">
-            <AlertTriangle className="w-4 h-4 mr-2" /> Under Arbitration
-          </div>
-        )}
+          {/* Status Indicators for non-actionable states */}
+          {(deal.status === 3 || deal.status === 4) && (
+            <div className="flex w-full items-center justify-center py-2 text-sm font-medium text-slate-500">
+              {deal.status === 3 ? 'Transaction Completed' : 'Transaction in Dispute'}
+            </div>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

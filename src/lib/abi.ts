@@ -1,3 +1,7 @@
+import { getAddress } from 'viem';
+
+export const CONTRACT_ADDRESS = getAddress('0x2F7FABc423aAbD55fa7feBa48BF6A0738eA7B6b4');
+
 export const ESCROW_ABI = [
   {
     "inputs": [
@@ -6,7 +10,7 @@ export const ESCROW_ABI = [
       { "internalType": "uint256", "name": "_deliveryDays", "type": "uint256" }
     ],
     "name": "createDeal",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -50,12 +54,13 @@ export const ESCROW_ABI = [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
           { "internalType": "address", "name": "buyer", "type": "address" },
           { "internalType": "address", "name": "seller", "type": "address" },
-          { "internalType": "string", "name": "description", "type": "string" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "string", "name": "description", "type": "string" },
           { "internalType": "uint256", "name": "deliveryDays", "type": "uint256" },
           { "internalType": "uint256", "name": "createdAt", "type": "uint256" },
-          { "internalType": "enum Escrow.Status", "name": "status", "type": "uint8" },
-          { "internalType": "string", "name": "proofIpfs", "type": "string" }
+          { "internalType": "uint256", "name": "acceptedAt", "type": "uint256" },
+          { "internalType": "string", "name": "proofIpfs", "type": "string" },
+          { "internalType": "enum Escrow.Status", "name": "status", "type": "uint8" }
         ],
         "internalType": "struct Escrow.Deal[]",
         "name": "",
@@ -66,5 +71,3 @@ export const ESCROW_ABI = [
     "type": "function"
   }
 ] as const;
-
-export const CONTRACT_ADDRESS = "0x6041B51aB82E006AB6870D2Dfbf66aA32228617";
