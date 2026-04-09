@@ -46,7 +46,7 @@ export function SellerDashboard() {
               <CheckCircle2 className="h-4 w-4" /> Verified Opportunities
             </h3>
             <p className="text-xs text-indigo-700 mt-1">
-              All deals listed here are fully funded. The ARC tokens are locked in the smart contract.
+              All deals listed here are fully funded. The USDC tokens are locked in the smart contract.
             </p>
           </div>
 

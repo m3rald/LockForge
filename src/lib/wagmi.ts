@@ -17,6 +17,8 @@ export const arcTestnet = defineChain({
 
 export const config = createConfig({
   chains: [arcTestnet, mainnet, sepolia],
+  multiInjectedProviderDiscovery: true,
+  ssr: true,
   transports: {
     [arcTestnet.id]: http(),
     [mainnet.id]: http(),

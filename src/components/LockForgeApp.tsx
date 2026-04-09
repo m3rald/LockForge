@@ -66,10 +66,8 @@ export function LockForgeApp() {
             </Button>
             <div className="text-center">
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="link" className="text-xs text-slate-400 hover:text-indigo-600">
-                    <Info className="mr-1 h-3 w-3" /> How it works
-                  </Button>
+                <DialogTrigger render={<Button variant="link" className="text-xs text-slate-400 hover:text-indigo-600" />}>
+                  <Info className="mr-1 h-3 w-3" /> How it works
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -78,7 +76,7 @@ export function LockForgeApp() {
                       <div className="space-y-4 py-4 text-slate-700">
                         <section>
                           <h4 className="font-bold text-slate-900">1. Funding</h4>
-                          <p>Buyers create a deal and lock 100% of the service fee plus gas. Funds are held by the smart contract.</p>
+                          <p>Buyers create a deal and lock 100% of the service fee in USDC plus gas. Funds are held by the smart contract.</p>
                         </section>
                         <section>
                           <h4 className="font-bold text-slate-900">2. Acceptance</h4>

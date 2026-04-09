@@ -6,8 +6,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { format } from 'date-fns';
-import { formatEther, parseEther } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 import { useEscrow } from '../hooks/useEscrow';
+import { USDC_DECIMALS } from '../lib/abi';
 import { ExternalLink, Clock, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export interface Deal {
@@ -96,7 +97,7 @@ export const DealCard: React.FC<DealCardProps> = ({ deal, role }) => {
             </CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-xl font-bold text-indigo-600">{formatEther(deal.amount)} ARC</div>
+            <div className="text-xl font-bold text-indigo-600">{formatUnits(deal.amount, USDC_DECIMALS)} USDC</div>
             <div className="text-xs text-slate-500">Escrowed Amount</div>
           </div>
         </div>
@@ -151,8 +152,8 @@ export const DealCard: React.FC<DealCardProps> = ({ deal, role }) => {
           
           {isSeller && deal.status === 1 && (
             <Dialog>
-              <DialogTrigger asChild>
-                <Button className="w-full">Submit Proof</Button>
+              <DialogTrigger render={<Button className="w-full" />}>
+                Submit Proof
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>

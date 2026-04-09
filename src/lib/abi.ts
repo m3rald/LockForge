@@ -1,6 +1,28 @@
 import { getAddress } from 'viem';
 
-export const CONTRACT_ADDRESS = getAddress('0x2F7FABc423aAbD55fa7feBa48BF6A0738eA7B6b4');
+export const CONTRACT_ADDRESS = getAddress('0x8196d7C6296D7b47C70c85B98620D9bAea9719eb');
+export const USDC_ADDRESS = '0x3600000000000000000000000000000000000000'; // Arc USDC Address
+export const USDC_DECIMALS = 6;
+
+export const ERC20_ABI = [
+  {
+    "inputs": [
+      { "internalType": "address", "name": "spender", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "approve",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
+    "name": "balanceOf",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] as const;
 
 export const ESCROW_ABI = [
   {

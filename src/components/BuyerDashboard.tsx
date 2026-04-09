@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { parseEther } from 'viem';
+import { parseUnits } from 'viem';
+import { USDC_DECIMALS } from '../lib/abi';
 import { Plus, ListFilter, History, ShieldCheck } from 'lucide-react';
 
 export function BuyerDashboard() {
@@ -28,7 +29,7 @@ export function BuyerDashboard() {
     try {
       await createDeal(
         formData.description,
-        parseEther(formData.amount),
+        parseUnits(formData.amount, USDC_DECIMALS),
         parseInt(formData.deliveryDays)
       );
       setFormData({ description: '', amount: '', deliveryDays: '7' });
@@ -68,7 +69,7 @@ export function BuyerDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (ARC)</Label>
+                  <Label htmlFor="amount">Amount (USDC)</Label>
                   <Input 
                     id="amount" 
                     type="number" 
