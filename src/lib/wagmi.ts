@@ -1,27 +1,18 @@
-import { http, createConfig } from 'wagmi';
-import { mainnet, sepolia } from 'wagmi/chains';
-import { defineChain } from 'viem';
+import { createConfig, http } from 'wagmi';
 
-export const arcTestnet = defineChain({
-  id: 666, // Placeholder ID for Arc Testnet, replace with actual if known
+export const arcTestnet = {
+  id: 999,
   name: 'Arc Testnet',
-  nativeCurrency: { name: 'Arc', symbol: 'ARC', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.testnet.arc.network'] },
-  },
-  blockExplorers: {
-    default: { name: 'ArcScan', url: 'https://explorer.testnet.arc.network' },
-  },
-  testnet: true,
-});
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+  rpcUrls: { default: { http: ['https://rpc.testnet.arc.network'] } },
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
+} as const;
 
 export const config = createConfig({
-  chains: [arcTestnet, mainnet, sepolia],
+  chains: [arcTestnet],
   multiInjectedProviderDiscovery: true,
   ssr: true,
   transports: {
     [arcTestnet.id]: http(),
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
   },
 });
