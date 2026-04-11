@@ -1,95 +1,254 @@
-import { getAddress } from 'viem';
-
-export const CONTRACT_ADDRESS = getAddress('0x8196d7C6296D7b47C70c85B98620D9bAea9719eb');
-export const USDC_ADDRESS = '0x3600000000000000000000000000000000000000'; // Arc USDC Address
-export const USDC_DECIMALS = 6;
-
-export const ERC20_ABI = [
+export const LOCKFORGE_ABI = [
+  // ── Write Functions ──────────────────────────────────
   {
-    "inputs": [
-      { "internalType": "address", "name": "spender", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    name: "createDeal",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "descriptionIPFS", type: "string" },
+      { name: "amount", type: "uint256" },
+      { name: "deliveryDays", type: "uint256" }
     ],
-    "name": "approve",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    outputs: [{ name: "dealId", type: "uint256" }]
   },
   {
-    "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
-    "name": "balanceOf",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
-
-export const ESCROW_ABI = [
+    name: "acceptDeal",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
+  },
   {
-    "inputs": [
-      { "internalType": "string", "name": "_description", "type": "string" },
-      { "internalType": "uint256", "name": "_amount", "type": "uint256" },
-      { "internalType": "uint256", "name": "_deliveryDays", "type": "uint256" }
+    name: "submitProof",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "dealId", type: "uint256" },
+      { name: "proofIPFS", type: "string" }
     ],
-    "name": "createDeal",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    outputs: []
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "_dealId", "type": "uint256" }],
-    "name": "acceptDeal",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "approveRelease",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
   },
   {
-    "inputs": [
-      { "internalType": "uint256", "name": "_dealId", "type": "uint256" },
-      { "internalType": "string", "name": "_proofIpfs", "type": "string" }
-    ],
-    "name": "submitProof",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "openDispute",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "_dealId", "type": "uint256" }],
-    "name": "approveRelease",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "claimAutoRelease",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "_dealId", "type": "uint256" }],
-    "name": "dispute",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    name: "resolveDisputeAuto",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
   },
   {
-    "inputs": [],
-    "name": "getDeals",
-    "outputs": [
+    name: "claimRefund",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: []
+  },
+  // ── Read Functions ───────────────────────────────────
+  {
+    name: "getDeal",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: [
       {
-        "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "address", "name": "buyer", "type": "address" },
-          { "internalType": "address", "name": "seller", "type": "address" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "string", "name": "description", "type": "string" },
-          { "internalType": "uint256", "name": "deliveryDays", "type": "uint256" },
-          { "internalType": "uint256", "name": "createdAt", "type": "uint256" },
-          { "internalType": "uint256", "name": "acceptedAt", "type": "uint256" },
-          { "internalType": "string", "name": "proofIpfs", "type": "string" },
-          { "internalType": "enum Escrow.Status", "name": "status", "type": "uint8" }
-        ],
-        "internalType": "struct Escrow.Deal[]",
-        "name": "",
-        "type": "tuple[]"
+        name: "",
+        type: "tuple",
+        components: [
+          { name: "buyer",            type: "address" },
+          { name: "seller",           type: "address" },
+          { name: "descriptionIPFS",  type: "string"  },
+          { name: "amount",           type: "uint256" },
+          { name: "deliveryDays",     type: "uint256" },
+          { name: "createdAt",        type: "uint256" },
+          { name: "acceptedAt",       type: "uint256" },
+          { name: "proofSubmittedAt", type: "uint256" },
+          { name: "disputeOpenedAt",  type: "uint256" },
+          { name: "proofIPFS",        type: "string"  },
+          { name: "status",           type: "uint8"   },
+          { name: "disputeBond",      type: "uint256" }
+        ]
       }
-    ],
-    "stateMutability": "view",
-    "type": "function"
+    ]
+  },
+  {
+    name: "getBuyerDeals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "buyer", type: "address" }],
+    outputs: [{ name: "", type: "uint256[]" }]
+  },
+  {
+    name: "getSellerDeals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "seller", type: "address" }],
+    outputs: [{ name: "", type: "uint256[]" }]
+  },
+  {
+    name: "getFundedDeals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256[]" }]
+  },
+  {
+    name: "getBatchDeals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "dealIds", type: "uint256[]" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple[]",
+        components: [
+          { name: "buyer",            type: "address" },
+          { name: "seller",           type: "address" },
+          { name: "descriptionIPFS",  type: "string"  },
+          { name: "amount",           type: "uint256" },
+          { name: "deliveryDays",     type: "uint256" },
+          { name: "createdAt",        type: "uint256" },
+          { name: "acceptedAt",       type: "uint256" },
+          { name: "proofSubmittedAt", type: "uint256" },
+          { name: "disputeOpenedAt",  type: "uint256" },
+          { name: "proofIPFS",        type: "string"  },
+          { name: "status",           type: "uint8"   },
+          { name: "disputeBond",      type: "uint256" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "getFeeBreakdown",
+    type: "function",
+    stateMutability: "pure",
+    inputs: [{ name: "amount", type: "uint256" }],
+    outputs: [
+      { name: "platformFee",    type: "uint256" },
+      { name: "sellerPayout",   type: "uint256" },
+      { name: "cancelFee",      type: "uint256" },
+      { name: "cancelRefund",   type: "uint256" },
+      { name: "disputeBond",    type: "uint256" },
+      { name: "gasEstimate",    type: "uint256" },
+      { name: "createTotalCost",type: "uint256" }
+    ]
+  },
+  {
+    name: "getReviewWindowStatus",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: [
+      { name: "reviewDeadline",   type: "uint256" },
+      { name: "secondsRemaining", type: "uint256" },
+      { name: "canDispute",       type: "bool"    },
+      { name: "canAutoRelease",   type: "bool"    }
+    ]
+  },
+  {
+    name: "getDisputeWindowStatus",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: [
+      { name: "disputeDeadline",  type: "uint256" },
+      { name: "secondsRemaining", type: "uint256" },
+      { name: "canAutoResolve",   type: "bool"    },
+      { name: "bondAmount",       type: "uint256" }
+    ]
+  },
+  {
+    name: "getDeliveryStatus",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "dealId", type: "uint256" }],
+    outputs: [
+      { name: "deliveryDeadline", type: "uint256" },
+      { name: "secondsRemaining", type: "uint256" },
+      { name: "isOverdue",        type: "bool"    }
+    ]
+  },
+  {
+    name: "getPlatformStats",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "totalDeals",       type: "uint256" },
+      { name: "fundedCount",      type: "uint256" },
+      { name: "completedCount",   type: "uint256" },
+      { name: "totalLockedUsdc6", type: "uint256" },
+      { name: "totalFeesUsdc6",   type: "uint256" }
+    ]
+  },
+  {
+    name: "checkUsdcAllowance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    name: "checkUsdcBalance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    name: "getTotalDeals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }]
   }
-] as const;
+] as const
+
+export const USDC_ABI = [
+  {
+    name: "approve",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount",  type: "uint256" }
+    ],
+    outputs: [{ name: "", type: "bool" }]
+  },
+  {
+    name: "allowance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner",   type: "address" },
+      { name: "spender", type: "address" }
+    ],
+    outputs: [{ name: "", type: "uint256" }]
+  },
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }]
+  }
+] as const
